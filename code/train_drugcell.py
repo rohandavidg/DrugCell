@@ -75,7 +75,7 @@ def create_term_mask(term_direct_gene_map, gene_dim, CUDA_ID):
 def train_model(root, term_size_map, term_direct_gene_map, dG, train_data,
                 gene_dim, drug_dim, model_save_folder, train_epochs,
                 batch_size, learning_rate, num_hiddens_genotype, num_hiddens_drug,
-                num_hiddens_final, cell_features, drug_features):
+                num_hiddens_final, cell_features, drug_features, wd):
 
     epoch_start_time = time()
     best_model = 0
@@ -95,7 +95,8 @@ def train_model(root, term_size_map, term_direct_gene_map, dG, train_data,
     term_mask_map = create_term_mask(model.term_direct_gene_map, num_genes, CUDA_ID)
 
     optimizer = torch.optim.Adam(
-        model.parameters(), lr=learning_rate, betas=(0.9, 0.99), eps=1e-05)
+        model.parameters(), lr=learning_rate, betas=(0.9, 0.99),
+        eps=1e-05, weight_decay=wd)
 
 
     optimizer.zero_grad()
@@ -276,6 +277,7 @@ parser.add_argument('-test', help='Validation dataset', type=str)
 parser.add_argument(
     '-epochs', help='Training epochs for training', type=int, default=300)
 parser.add_argument('-lr', help='Learning rate', type=float, default=0.001)
+parser.add_argument('-wd', help='Weight Decay', type=float, default=0)
 parser.add_argument('-batchsize', help='Batchsize', type=int, default=5000)
 parser.add_argument(
     '-modeldir', help='Folder for trained models', type=str, default='MODEL/')
@@ -338,4 +340,4 @@ CUDA_ID = opt.cuda
 train_model(root, term_size_map, term_direct_gene_map, dG,
             train_data, num_genes, drug_dim, opt.modeldir, opt.epochs,
             opt.batchsize, opt.lr, num_hiddens_genotype, num_hiddens_drug,
-            num_hiddens_final, cell_features, drug_features)
+            num_hiddens_final, cell_features, drug_features, opt.wd)
